@@ -1,10 +1,7 @@
-# 允许 zsh-abbr 覆盖系统同名命令
-export ABBR_FORCE=1
-
 # Files
-abbr add mv='mv -iv'
-abbr add cp='cp -riv'
-abbr add mkdir='mkdir -vp'
+alias mv='mv -iv'
+alias cp='cp -riv'
+alias mkdir='mkdir -vp'
 
 # eza
 alias ls='eza --color=always --icons --group-directories-first'
@@ -14,11 +11,10 @@ alias l='ll'
 
 # Editor
 alias vim='nvim'
-alias vi='nvim'
-alias v='nvim'
 
 # Dev
 alias gg="lazygit"
 
 # Other
-abbr add cls='clear'
+alias cls='clear'
+alias reload="source \$ZDOTDIR/.zshrc"
