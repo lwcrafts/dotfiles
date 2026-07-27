@@ -14,15 +14,16 @@ set -g fish_key_bindings fish_vi_key_bindings
 set -Ux PYENV_ROOT $HOME/.pyenv
 test -d $PYENV_ROOT/bin; and fish_add_path $PYENV_ROOT/bin
 
-
 set -gx ANDROID_HOME $HOME/Library/Android/sdk
-
 set -gx EDITOR nvim
 set -gx XDG_RUNTIME_DIR ~/.runtime
-
 set -gx XDG_CONFIG_HOME $HOME/.config
+
 alias config '/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
 
+alias ls 'eza --color=always --icons --group-directories-first'
+alias la 'eza --color=always --icons --group-directories-first --all'
+alias ll 'eza --color=always --icons --group-directories-first --all --long'
 abbr tm task-master
 abbr t tmux
 abbr ta 'tmux attach -t'
@@ -33,12 +34,9 @@ abbr tk 'tmux kill-session -t'
 abbr mv "mv -iv"
 abbr cp "cp -riv"
 abbr mkdir "mkdir -vp"
-alias ls 'eza --color=always --icons --group-directories-first'
-alias la 'eza --color=always --icons --group-directories-first --all'
-alias ll 'eza --color=always --icons --group-directories-first --all --long'
 abbr l ll
 abbr vim nvim
-alias lazygit "TERM=xterm-256color command lazygit"
+#alias lazygit "TERM=xterm-256color command lazygit"
 abbr gg lazygit
 abbr cls clear
 
@@ -68,6 +66,12 @@ if type -q fnm
   fnm env | source
 end
 
+# oh-my-posh
+if type -q oh-my-posh
+  oh-my-posh init fish | source
+end
+
+# local config
 set LOCAL_CONFIG (dirname (status --current-filename))/config-local.fish
 if test -f $LOCAL_CONFIG
     source $LOCAL_CONFIG
