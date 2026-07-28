@@ -1,9 +1,5 @@
 -- Disable lsp
-local disabled = {
-	tailwindcss = true,
-	ts_ls = true,
-	tsgo = true,
-}
+local disabled = {}
 
 vim.g.inlay_hints = true
 
