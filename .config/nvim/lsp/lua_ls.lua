@@ -1,4 +1,4 @@
---- mac: brew install lua-language-server
+--- brew install lua-language-server
 
 local library = vim.api.nvim_get_runtime_file("", true)
 table.insert(library, "${3rd}/luv/library")
