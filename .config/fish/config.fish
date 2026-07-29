@@ -4,8 +4,6 @@ fish_add_path /bin
 fish_add_path $HOME/bin
 fish_add_path $HOME/.local/bin
 fish_add_path /opt/homebrew/bin
-fish_add_path $HOME/.cargo.
-# fish_add_path ~/flutter/flutter/bin
 
 # Fish Vi mode
 set -g fish_key_bindings fish_vi_key_bindings
@@ -21,6 +19,7 @@ set -gx XDG_CONFIG_HOME $HOME/.config
 
 alias config '/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
 
+alias reload 'source $XDG_CONFIG_HOME/fish/config.fish'
 alias ls 'eza --color=always --icons --group-directories-first'
 alias la 'eza --color=always --icons --group-directories-first --all'
 alias ll 'eza --color=always --icons --group-directories-first --all --long'
@@ -39,6 +38,11 @@ abbr vim nvim
 #alias lazygit "TERM=xterm-256color command lazygit"
 abbr gg lazygit
 abbr cls clear
+
+# cargo
+if test -f $HOME/.cargo/env.fish
+  source $HOME/.cargo/env.fish
+end
 
 # bun
 set --export BUN_INSTALL "$HOME/.bun"
@@ -68,7 +72,7 @@ end
 
 # oh-my-posh
 if type -q oh-my-posh
-  oh-my-posh init fish | source
+  oh-my-posh init fish --config $XDG_CONFIG_HOME/ohmyposh/config.omp.json | source
 end
 
 # local config

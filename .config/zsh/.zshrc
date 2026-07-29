@@ -33,7 +33,7 @@ zinit light zsh-users/zsh-syntax-highlighting
 zinit light Aloxaf/fzf-tab
 
 # oh my posh
-eval "$(oh-my-posh init zsh --config $XDG_CONFIG_HOME/ohmyposh/tokyonight-day.omp.json)"
+eval "$(oh-my-posh init zsh --config $XDG_CONFIG_HOME/ohmyposh/config.omp.json)"
 
 # zoxide
 eval "$(zoxide init zsh)"
