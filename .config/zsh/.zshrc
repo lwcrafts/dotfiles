@@ -32,8 +32,8 @@ zinit light zsh-users/zsh-syntax-highlighting
 # fzf-tab
 zinit light Aloxaf/fzf-tab
 
-# oh my posh
-eval "$(oh-my-posh init zsh --config $XDG_CONFIG_HOME/ohmyposh/config.omp.json)"
+# starship
+eval "$(starship init zsh)"
 
 # zoxide
 eval "$(zoxide init zsh)"
