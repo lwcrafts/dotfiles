@@ -23,6 +23,12 @@ alias reload 'source $XDG_CONFIG_HOME/fish/config.fish'
 alias ls 'eza --color=always --icons --group-directories-first'
 alias la 'eza --color=always --icons --group-directories-first --all'
 alias ll 'eza --color=always --icons --group-directories-first --all --long'
+# mihomo
+alias mihomo-start 'sudo launchctl load -w /Library/LaunchDaemons/com.mihomo.plist'
+alias mihomo-stop 'sudo launchctl unload -w /Library/LaunchDaemons/com.mihomo.plist'
+alias mihomo-restart 'sudo launchctl unload -w /Library/LaunchDaemons/com.mihomo.plist && sudo launchctl load -w /Library/LaunchDaemons/com.mihomo.plist'
+alias mihomo-status 'sudo launchctl list | grep mihomo'
+
 abbr tm task-master
 abbr t tmux
 abbr ta 'tmux attach -t'
@@ -71,8 +77,12 @@ if type -q fnm
 end
 
 # oh-my-posh
-if type -q oh-my-posh
-  oh-my-posh init fish --config $XDG_CONFIG_HOME/ohmyposh/config.omp.json | source
+# if type -q oh-my-posh
+#   oh-my-posh init fish --config $XDG_CONFIG_HOME/ohmyposh/config.omp.json | source
+# end
+
+if type -q starship
+  starship init fish | source
 end
 
 # local config
