@@ -1,11 +1,81 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # 基础 yabai 配置
-# 文档: https://github.com/koekeishiya/yabai/wiki
+# 文档: https://github.com/asmvik/yabai/wiki
 
-# mbp屏幕uuid
-# yabai -m query --displays
-MBP_UUID="37D8832A-2D66-02CA-B9F7-8F30A301B230"
+# ======================== 加载路径与辅助函数 ========================
+
+PROFILE_SCRIPT="${HOME}/.config/yabai/display_profile.sh"
+BORDER_SCRIPT="${HOME}/.config/yabai/update_border_color.sh"
+HELPERS_SCRIPT="${HOME}/.config/yabai/yabai_helpers.sh"
+
+if [ ! -r "$HELPERS_SCRIPT" ]; then
+  printf 'yabairc: helper script not found: %s\n' "$HELPERS_SCRIPT" >&2
+  exit 1
+fi
+
+. "$HELPERS_SCRIPT"
+
+# ============================================================
+# 用户配置：日常修改主要集中在这里
+# ============================================================
+
+# 普通 Space 按 Mission Control 中的顺序分配这些标签。
+# 第 3 个 Space（Common）和第 6 个 Space（Chat）会设置为 float。
+SPACE_PROJECTS="Projects"
+SPACE_DOTFILES="Dotfiles"
+SPACE_COMMON="Common"
+SPACE_YOUTUBE="Youtube"
+SPACE_WEB="Web"
+SPACE_CHAT="Chat"
+SPACE_LABELS="$SPACE_PROJECTS $SPACE_DOTFILES $SPACE_COMMON $SPACE_YOUTUBE $SPACE_WEB $SPACE_CHAT"
+
+# App 路由规则。修改正则即可增删匹配的 App。
+KITTY_APP_REGEX='^kitty$'
+GHOSTTY_APP_REGEX='^Ghostty$'
+BROWSER_APPS_REGEX='^(Google Chrome|Safari|Brave Browser)$'
+CHAT_APPS_REGEX='^(WeChat|QQ|Telegram)$'
+
+# MacBook 内置屏幕 UUID；用于判断哪些 Space 使用较小的 top padding。
+MBP_DISPLAY_UUID="37D8832A-2D66-02CA-B9F7-8F30A301B230"
+BASE_TOP_PADDING=48
+MBP_TOP_PADDING=18
+
+# ======================== 生成动态 Profile 快照 ========================
+
+# display_profile.sh 作为独立的 signal 进程运行，因此在启动前生成其配置快照。
+PROFILE_CONFIG="${TMPDIR:-/tmp}/yabai-profile-$(id -u).conf"
+PROFILE_CONFIG_TMP="${PROFILE_CONFIG}.$$"
+
+if ! (
+  umask 077
+  {
+    write_shell_assignment SPACE_PROJECTS "$SPACE_PROJECTS" &&
+      write_shell_assignment SPACE_DOTFILES "$SPACE_DOTFILES" &&
+      write_shell_assignment SPACE_COMMON "$SPACE_COMMON" &&
+      write_shell_assignment SPACE_YOUTUBE "$SPACE_YOUTUBE" &&
+      write_shell_assignment SPACE_WEB "$SPACE_WEB" &&
+      write_shell_assignment SPACE_CHAT "$SPACE_CHAT" &&
+      write_shell_assignment SPACE_LABELS "$SPACE_LABELS" &&
+      write_shell_assignment KITTY_APP_REGEX "$KITTY_APP_REGEX" &&
+      write_shell_assignment GHOSTTY_APP_REGEX "$GHOSTTY_APP_REGEX" &&
+      write_shell_assignment BROWSER_APPS_REGEX "$BROWSER_APPS_REGEX" &&
+      write_shell_assignment CHAT_APPS_REGEX "$CHAT_APPS_REGEX" &&
+      write_shell_assignment MBP_DISPLAY_UUID "$MBP_DISPLAY_UUID" &&
+      write_shell_assignment BASE_TOP_PADDING "$BASE_TOP_PADDING" &&
+      write_shell_assignment MBP_TOP_PADDING "$MBP_TOP_PADDING"
+  } > "$PROFILE_CONFIG_TMP"
+); then
+  rm -f "$PROFILE_CONFIG_TMP" || :
+  printf 'yabairc: could not write profile configuration: %s\n' "$PROFILE_CONFIG" >&2
+  exit 1
+fi
+
+if ! mv -f "$PROFILE_CONFIG_TMP" "$PROFILE_CONFIG"; then
+  rm -f "$PROFILE_CONFIG_TMP" || :
+  printf 'yabairc: could not install profile configuration: %s\n' "$PROFILE_CONFIG" >&2
+  exit 1
+fi
 
 # ======================== 全局设置 ========================
 
@@ -20,8 +90,8 @@ yabai -m config split_ratio 0.50
 yabai -m config auto_balance off
 # 窗口间距与屏幕边距
 yabai -m config window_gap 10
-# 如果有sketchybar下面脚本适配
-yabai -m config top_padding 48
+# 默认给 SketchyBar 预留空间；display_profile.sh 会单独调整 MBP 内屏
+yabai -m config top_padding "$BASE_TOP_PADDING"
 yabai -m config bottom_padding 12
 yabai -m config left_padding 12
 yabai -m config right_padding 12
@@ -35,79 +105,67 @@ yabai -m config mouse_action2 resize
 yabai -m config mouse_follows_focus off
 yabai -m config focus_follows_mouse off
 
+# ======================== 静态窗口规则 ========================
 
-# MBP屏幕设置18
-if command -v sketchybar >/dev/null 2>&1; then
-  mbp_spaces=$(yabai -m query --displays | awk -v uuid="$MBP_UUID" '
-    BEGIN { RS="}"; FS="," }
-    $0 ~ uuid {
-      # 在匹配到 UUID 的大括号块中，寻找 "spaces":[...] 这一行
-      if (match($0, /"spaces":\[[0-9, ]+\]/)) {
-        spaces_part = substr($0, RSTART, RLENGTH)
-        # 去掉 JSON 的 [ ] 符号以及 "spaces": 前缀
-        gsub(/["spaces":\[\]]/, "", spaces_part)
-        # 替换逗号为空格，输出干净的数字列表，例如 "5 6"
-        gsub(/,/, " ", spaces_part)
-        print spaces_part
-      }
-    }
-  ')
+# 使用稳定 label，重复加载配置时先替换旧规则，避免累积。
+replace_rule "lw.rule.layer-normal" app=".*" sub-layer=normal
+replace_rule "lw.rule.unmanage-apps" \
+  app="^(System Settings|System Preferences|Activity Monitor|Notes|Stickies|Finder|VibeStoreClient|Music|Black Desert Mobile|Gemini)$" \
+  manage=off
+replace_rule "lw.rule.unmanage-preferences-settings-about-alfred" \
+  app="^(Preferences|Settings|About|Alfred).*$" manage=off
 
-  if [ -n "$mbp_spaces" ]; then
-    for space in $mbp_spaces; do
-      yabai -m config --space "$space" top_padding 18 &
-    done
-    wait
-  fi
+# ======================== 启动时应用动态 Profile ========================
+
+# profile 会根据当前普通 Space 数量设置标签、padding 和 App 路由规则。
+if /bin/bash "$PROFILE_SCRIPT" --startup; then
+  yabai -m rule --apply
+else
+  printf 'yabairc: display profile failed; keeping the last valid dynamic state\n' >&2
 fi
 
-# 让所有窗口保持 normal 层级，避免部分窗口异常压住其它窗口
-# 参考: https://github.com/koekeishiya/yabai/issues/1929
-yabai -m rule --add app=".*" sub-layer=normal
+# ======================== Borders 配置与 Signals ========================
 
-# ======================== Space 标签 ========================
-# 给常用桌面命名，方便规则和快捷键按名字跳转
-yabai -m space 1 --label Projects
-yabai -m space 2 --label Dotfiles
-yabai -m space 3 --label Common --layout float
-yabai -m space 4 --label Youtube
-yabai -m space 5 --label Web
-yabai -m space 6 --label Chat --layout float
+if command -v borders >/dev/null 2>&1 && [ -f "$BORDER_SCRIPT" ]; then
+  border_action="/bin/bash '$BORDER_SCRIPT'"
 
-# ======================== 窗口规则 ========================
+  replace_signal "lw.signal.border-window-focused" \
+    event=window_focused action="$border_action"
+  replace_signal "lw.signal.border-application-front-switched" \
+    event=application_front_switched action="$border_action"
+  replace_signal "lw.signal.border-space-changed" \
+    event=space_changed action="$border_action"
 
-yabai -m rule --add app="System Settings" manage=off           
-yabai -m rule --add app="System Preferences" manage=off           
-yabai -m rule --add app="Activity Monitor" manage=off           
-yabai -m rule --add app="Notes" manage=off           
-yabai -m rule --add app="Stickies" manage=off           
-yabai -m rule --add app="Finder" manage=off           
-yabai -m rule --add app="VibeStoreClient" manage=off           
-yabai -m rule --add app="Alfred Preferences" manage=off           
-yabai -m rule --add app="Music" manage=off           
-
-yabai -m rule --add app="^(Preferences|Settings|About|Alfred).*$" manage=off
-
-
-# 常用 App 分配到指定 Space；不需要可以删掉或改成自己的 App 名称
-yabai -m rule --add app="^(kitty)$" space="Projects"
-yabai -m rule --add app="^(Ghostty)$" space="Dotfiles"
-yabai -m rule --add app="^(Google Chrome|Safari|Beave Browser)$" space="Web"
-yabai -m rule --add app="^(WeChat|QQ|Telegram})$" space="Chat"
-
-yabai -m rule --apply
-
-# ======================== Signals ========================
-
-# 如果安装了 borders，并且存在边框颜色脚本，则在切换焦点/应用/桌面时刷新边框颜色
-border_script="${HOME}/.config/yabai/update_border_color.sh"
-if command -v borders >/dev/null 2>&1 && [ -f "$border_script" ]; then
-  yabai -m signal --add event=window_focused action="bash '$border_script'"
-  yabai -m signal --add event=front_app_switched action="bash '$border_script'"
-  yabai -m signal --add event=space_changed action="bash '$border_script'"
-  bash "$border_script"
+  /bin/bash "$BORDER_SCRIPT"
+else
+  # 可选集成被移除后，也清理之前由本配置注册的 signal。
+  remove_signal "lw.signal.border-window-focused"
+  remove_signal "lw.signal.border-application-front-switched"
+  remove_signal "lw.signal.border-space-changed"
 fi
+
+# ======================== 显示器 / Space 拓扑 Signals ========================
+
+profile_action="/bin/bash '$PROFILE_SCRIPT'"
+
+replace_signal "lw.signal.profile-display-added" \
+  event=display_added action="$profile_action"
+replace_signal "lw.signal.profile-display-removed" \
+  event=display_removed action="$profile_action"
+replace_signal "lw.signal.profile-display-moved" \
+  event=display_moved action="$profile_action"
+replace_signal "lw.signal.profile-display-resized" \
+  event=display_resized action="$profile_action"
+replace_signal "lw.signal.profile-space-created" \
+  event=space_created action="$profile_action"
+replace_signal "lw.signal.profile-space-destroyed" \
+  event=space_destroyed action="$profile_action"
+
+#  https://ghostty.org/docs/help/macos-tiling-wms
+yabai -m signal --add app='^Ghostty$' event=window_created action='yabai -m space --layout bsp'
+yabai -m signal --add app='^Ghostty$' event=window_destroyed action='yabai -m space --layout bsp'
+
 
 # ======================== 启动提示 ========================
 
-echo "yabai config loaded"
+printf 'yabai config loaded\n'
