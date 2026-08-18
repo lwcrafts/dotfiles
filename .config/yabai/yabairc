@@ -3,80 +3,6 @@
 # 基础 yabai 配置
 # 文档: https://github.com/asmvik/yabai/wiki
 
-# ======================== 加载路径与辅助函数 ========================
-
-PROFILE_SCRIPT="${HOME}/.config/yabai/display_profile.sh"
-BORDER_SCRIPT="${HOME}/.config/yabai/update_border_color.sh"
-HELPERS_SCRIPT="${HOME}/.config/yabai/yabai_helpers.sh"
-
-if [ ! -r "$HELPERS_SCRIPT" ]; then
-  printf 'yabairc: helper script not found: %s\n' "$HELPERS_SCRIPT" >&2
-  exit 1
-fi
-
-. "$HELPERS_SCRIPT"
-
-# ============================================================
-# 用户配置：日常修改主要集中在这里
-# ============================================================
-
-# 普通 Space 按 Mission Control 中的顺序分配这些标签。
-# 第 3 个 Space（Common）和第 6 个 Space（Chat）会设置为 float。
-SPACE_PROJECTS="Projects"
-SPACE_DOTFILES="Dotfiles"
-SPACE_COMMON="Common"
-SPACE_YOUTUBE="Youtube"
-SPACE_WEB="Web"
-SPACE_CHAT="Chat"
-SPACE_LABELS="$SPACE_PROJECTS $SPACE_DOTFILES $SPACE_COMMON $SPACE_YOUTUBE $SPACE_WEB $SPACE_CHAT"
-
-# App 路由规则。修改正则即可增删匹配的 App。
-KITTY_APP_REGEX='^kitty$'
-GHOSTTY_APP_REGEX='^Ghostty$'
-BROWSER_APPS_REGEX='^(Google Chrome|Safari|Brave Browser)$'
-CHAT_APPS_REGEX='^(WeChat|QQ|Telegram)$'
-
-# MacBook 内置屏幕 UUID；用于判断哪些 Space 使用较小的 top padding。
-MBP_DISPLAY_UUID="37D8832A-2D66-02CA-B9F7-8F30A301B230"
-BASE_TOP_PADDING=48
-MBP_TOP_PADDING=18
-
-# ======================== 生成动态 Profile 快照 ========================
-
-# display_profile.sh 作为独立的 signal 进程运行，因此在启动前生成其配置快照。
-PROFILE_CONFIG="${TMPDIR:-/tmp}/yabai-profile-$(id -u).conf"
-PROFILE_CONFIG_TMP="${PROFILE_CONFIG}.$$"
-
-if ! (
-  umask 077
-  {
-    write_shell_assignment SPACE_PROJECTS "$SPACE_PROJECTS" &&
-      write_shell_assignment SPACE_DOTFILES "$SPACE_DOTFILES" &&
-      write_shell_assignment SPACE_COMMON "$SPACE_COMMON" &&
-      write_shell_assignment SPACE_YOUTUBE "$SPACE_YOUTUBE" &&
-      write_shell_assignment SPACE_WEB "$SPACE_WEB" &&
-      write_shell_assignment SPACE_CHAT "$SPACE_CHAT" &&
-      write_shell_assignment SPACE_LABELS "$SPACE_LABELS" &&
-      write_shell_assignment KITTY_APP_REGEX "$KITTY_APP_REGEX" &&
-      write_shell_assignment GHOSTTY_APP_REGEX "$GHOSTTY_APP_REGEX" &&
-      write_shell_assignment BROWSER_APPS_REGEX "$BROWSER_APPS_REGEX" &&
-      write_shell_assignment CHAT_APPS_REGEX "$CHAT_APPS_REGEX" &&
-      write_shell_assignment MBP_DISPLAY_UUID "$MBP_DISPLAY_UUID" &&
-      write_shell_assignment BASE_TOP_PADDING "$BASE_TOP_PADDING" &&
-      write_shell_assignment MBP_TOP_PADDING "$MBP_TOP_PADDING"
-  } > "$PROFILE_CONFIG_TMP"
-); then
-  rm -f "$PROFILE_CONFIG_TMP" || :
-  printf 'yabairc: could not write profile configuration: %s\n' "$PROFILE_CONFIG" >&2
-  exit 1
-fi
-
-if ! mv -f "$PROFILE_CONFIG_TMP" "$PROFILE_CONFIG"; then
-  rm -f "$PROFILE_CONFIG_TMP" || :
-  printf 'yabairc: could not install profile configuration: %s\n' "$PROFILE_CONFIG" >&2
-  exit 1
-fi
-
 # ======================== 全局设置 ========================
 
 # 默认布局: bsp 自动平铺；需要临时浮动时可用 skhd 绑定切换
@@ -89,12 +15,12 @@ yabai -m config split_ratio 0.50
 # 自动平衡窗口大小：off 更符合手动调整习惯；想自动均分可改为 on
 yabai -m config auto_balance off
 # 窗口间距与屏幕边距
-yabai -m config window_gap 10
+yabai -m config window_gap 8
 # 默认给 SketchyBar 预留空间；display_profile.sh 会单独调整 MBP 内屏
-yabai -m config top_padding "$BASE_TOP_PADDING"
-yabai -m config bottom_padding 12
-yabai -m config left_padding 12
-yabai -m config right_padding 12
+# yabai -m config top_padding "$BASE_TOP_PADDING"
+yabai -m config bottom_padding 10
+yabai -m config left_padding 10
+yabai -m config right_padding 10
 # 关闭 yabai 自带透明度/阴影，减少视觉干扰
 yabai -m config window_opacity off
 yabai -m config window_shadow off
@@ -107,65 +33,54 @@ yabai -m config focus_follows_mouse off
 
 # ======================== 静态窗口规则 ========================
 
-# 使用稳定 label，重复加载配置时先替换旧规则，避免累积。
-replace_rule "lw.rule.layer-normal" app=".*" sub-layer=normal
-replace_rule "lw.rule.unmanage-apps" \
-  app="^(System Settings|System Preferences|Activity Monitor|Notes|Stickies|Finder|VibeStoreClient|Music|Black Desert Mobile|Gemini)$" \
-  manage=off
-replace_rule "lw.rule.unmanage-preferences-settings-about-alfred" \
-  app="^(Preferences|Settings|About|Alfred).*$" manage=off
+# 系统工具与偏好设置
+yabai -m rule --add app="^System Settings$" manage=off
+yabai -m rule --add app="^System Preferences$" manage=off
+yabai -m rule --add app="^Calculator$" manage=off
+yabai -m rule --add app="^Dictionary$" manage=off
+yabai -m rule --add app="^Software Update$" manage=off
+yabai -m rule --add app="^Activity Monitor$" manage=off
+yabai -m rule --add app="^Archive Utility$" manage=off
+yabai -m rule --add app="^Disk Utility$" manage=off
+yabai -m rule --add app="^Keychain Access$" manage=off
+yabai -m rule --add app="^Font Book$" manage=off
+yabai -m rule --add app="^ColorSync Utility$" manage=off
+yabai -m rule --add app="^Photo Booth$" manage=off
 
+# 常见应用 / 弹窗
+yabai -m rule --add app="^App Store$" manage=off
+yabai -m rule --add app="^QuickTime Player$" manage=off
+yabai -m rule --add app="^1Password$" manage=off
+yabai -m rule --add app="^Music$" manage=off
+
+# 匹配常见应用的设置窗口（标题以 Preferences 或 Settings 结尾）
+yabai -m rule --add title="Preferences$" manage=off
+yabai -m rule --add title="Settings$" manage=off
+
+# 针对个别应用如微信等的浮动窗口（通常无标题）
+yabai -m rule --add app="^WeChat$" title="^$" manage=off
+yabai -m rule --add app="^QQ$" title="^$" manage=off
+yabai -m rule --add app="^Telegram$" title="^$" manage=off
+
+# 开发工具
+yabai -m rule --add app="^Simulator$" title="^$" manage=off
+
+# 游戏
+yabai -m rule --add app="^Black Desert Mobile$" manage=off
 # ======================== 启动时应用动态 Profile ========================
 
-# profile 会根据当前普通 Space 数量设置标签、padding 和 App 路由规则。
-if /bin/bash "$PROFILE_SCRIPT" --startup; then
-  yabai -m rule --apply
-else
-  printf 'yabairc: display profile failed; keeping the last valid dynamic state\n' >&2
-fi
+PROFILE_SCRIPT="${HOME}/.config/yabai/display_profile.sh"
 
-# ======================== Borders 配置与 Signals ========================
+# 清除旧关联
+yabai -m signal --remove "display_added_padding" 2>/dev/null
+yabai -m signal --remove "display_removed_padding" 2>/dev/null
+yabai -m signal --remove "display_created_padding" 2>/dev/null
 
-if command -v borders >/dev/null 2>&1 && [ -f "$BORDER_SCRIPT" ]; then
-  border_action="/bin/bash '$BORDER_SCRIPT'"
+yabai -m signal --add label="display_added_padding" event=display_added action="$PROFILE_SCRIPT"
+yabai -m signal --add label="display_removed_padding" event=display_removed action="$PROFILE_SCRIPT"
+yabai -m signal --add label="space_created_padding" event=space_created action="$PROFILE_SCRIPT"
 
-  replace_signal "lw.signal.border-window-focused" \
-    event=window_focused action="$border_action"
-  replace_signal "lw.signal.border-application-front-switched" \
-    event=application_front_switched action="$border_action"
-  replace_signal "lw.signal.border-space-changed" \
-    event=space_changed action="$border_action"
-
-  /bin/bash "$BORDER_SCRIPT"
-else
-  # 可选集成被移除后，也清理之前由本配置注册的 signal。
-  remove_signal "lw.signal.border-window-focused"
-  remove_signal "lw.signal.border-application-front-switched"
-  remove_signal "lw.signal.border-space-changed"
-fi
+$PROFILE_SCRIPT &
 
 # ======================== 显示器 / Space 拓扑 Signals ========================
 
-profile_action="/bin/bash '$PROFILE_SCRIPT'"
-
-replace_signal "lw.signal.profile-display-added" \
-  event=display_added action="$profile_action"
-replace_signal "lw.signal.profile-display-removed" \
-  event=display_removed action="$profile_action"
-replace_signal "lw.signal.profile-display-moved" \
-  event=display_moved action="$profile_action"
-replace_signal "lw.signal.profile-display-resized" \
-  event=display_resized action="$profile_action"
-replace_signal "lw.signal.profile-space-created" \
-  event=space_created action="$profile_action"
-replace_signal "lw.signal.profile-space-destroyed" \
-  event=space_destroyed action="$profile_action"
-
-#  https://ghostty.org/docs/help/macos-tiling-wms
-yabai -m signal --add app='^Ghostty$' event=window_created action='yabai -m space --layout bsp'
-yabai -m signal --add app='^Ghostty$' event=window_destroyed action='yabai -m space --layout bsp'
-
-
-# ======================== 启动提示 ========================
-
-printf 'yabai config loaded\n'

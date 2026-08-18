@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-
-borders hidpi=on width=5.0 inactive_color=0x00000000 active_color=0xff9854f1
