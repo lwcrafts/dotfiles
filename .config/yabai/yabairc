@@ -46,24 +46,27 @@ yabai -m rule --add app="^Keychain Access$" manage=off
 yabai -m rule --add app="^Font Book$" manage=off
 yabai -m rule --add app="^ColorSync Utility$" manage=off
 yabai -m rule --add app="^Photo Booth$" manage=off
+yabai -m rule --add app="^Finder$" manage=off
+yabai -m rule --add app="^Stickies$" manage=off
 
 # 常见应用 / 弹窗
 yabai -m rule --add app="^App Store$" manage=off
 yabai -m rule --add app="^QuickTime Player$" manage=off
 yabai -m rule --add app="^1Password$" manage=off
 yabai -m rule --add app="^Music$" manage=off
+yabai -m rule --add app="^zashboard$" manage=off
 
 # 匹配常见应用的设置窗口（标题以 Preferences 或 Settings 结尾）
 yabai -m rule --add title="Preferences$" manage=off
 yabai -m rule --add title="Settings$" manage=off
 
 # 针对个别应用如微信等的浮动窗口（通常无标题）
-yabai -m rule --add app="^WeChat$" title="^$" manage=off
-yabai -m rule --add app="^QQ$" title="^$" manage=off
-yabai -m rule --add app="^Telegram$" title="^$" manage=off
+yabai -m rule --add app="^WeChat$" manage=off
+yabai -m rule --add app="^QQ$" manage=off
+yabai -m rule --add app="^Telegram$" manage=off
 
 # 开发工具
-yabai -m rule --add app="^Simulator$" title="^$" manage=off
+yabai -m rule --add app="^Simulator$" manage=off
 
 # 游戏
 yabai -m rule --add app="^Black Desert Mobile$" manage=off
