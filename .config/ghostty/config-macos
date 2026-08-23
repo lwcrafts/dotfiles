@@ -1,3 +1,6 @@
-
 macos-titlebar-style = tabs
 macos-option-as-alt = true
+
+# icon
+macos-icon = blueprint
+

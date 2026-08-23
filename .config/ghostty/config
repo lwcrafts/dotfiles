@@ -6,3 +6,7 @@ font-size = 15
 theme = light:TokyoNight Day,dark:TokyoNight Moon
 background-opacity = 0.88
 background-blur = true
+
+config-file = ?config-macos
+
+
