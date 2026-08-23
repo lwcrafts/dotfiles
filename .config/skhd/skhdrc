@@ -9,3 +9,44 @@ lctrl - j | down
 lctrl - k | up
 lctrl - l | right
 
+# ============= yabai ======================
+# # 1. cmd + hjkl 切换窗口
+# alt - h : yabai -m window --focus west
+# alt - j : yabai -m window --focus south
+# alt - k : yabai -m window --focus north
+# alt - l : yabai -m window --focus east
+# # 2. cmd + shift + hjkl 把当前窗口跟旁边窗口对调位置
+# alt + shift - h : yabai -m window --swap west
+# alt + shift - j : yabai -m window --swap south
+# alt + shift - k : yabai -m window --swap north
+# alt + shift - l : yabai -m window --swap east
+# # 3. alt + cmd + hjkl 动态拉伸窗口边缘
+# alt + cmd - h : yabai -m window --resize left:-20:0; yabai -m window --resize right:-20:0
+# alt + cmd - j : yabai -m window --resize bottom:0:20; yabai -m window --resize top:0:20
+# alt + cmd - k : yabai -m window --resize top:0:-20; yabai -m window --resize bottom:0:-20
+# alt + cmd - l : yabai -m window --resize right:20:0; yabai -m window --resize left:20:0
+# # 4. 窗口状态切换
+# # 一键让当前窗口全盘最大化
+# alt + shift - f : yabai -m window --toggle zoom-parent
+# # 一键让当前窗口脱离平铺
+# alt + shift - e : yabai -m window --toggle float --toggle border
+# # 自动平衡当前屏幕收窗口大小
+# alt + shift - r : yabai -m space --balance
+# # 5. 夸桌面快速穿梭
+# alt - 1 : yabai -m space --focus 1
+# alt - 2 : yabai -m space --focus 2
+# alt - 3 : yabai -m space --focus 3
+# alt - 4 : yabai -m space --focus 4
+# alt - 9 : yabai -m space --focus 5
+# alt - 0 : yabai -m space --focus 6
+# # alt + shift + 数字：把当前窗口移动到对应桌面
+# alt + shift - 1 : yabai -m window --space 1
+# alt + shift - 2 : yabai -m window --space 2
+# alt + shift - 3 : yabai -m window --space 3
+# alt + shift - 4 : yabai -m window --space 4
+# alt + shift - 9 : yabai -m window --space 5
+# alt + shift - 0 : yabai -m window --space 6
+#
+# # 6. 服务管理
+# # 一键重启 通过alfred控制
+# #alt + shift - r : yabai --restart-service
