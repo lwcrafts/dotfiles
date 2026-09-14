@@ -27,6 +27,6 @@ else
 fi
 
 sketchybar --set "$NAME" \
-  icon="󰍛" \
+  icon="" \
   icon.color="$COLOR" \
   label="${USED}%"

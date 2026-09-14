@@ -7,7 +7,18 @@ MUTED="${MUTED:-0xff6172b0}"
 
 
 if [[ "$1" == "bsp" || "$1" == "stack" || "$1" == "float" ]]; then
-  yabai -m space --layout "$1"
+  if command -v aerospace >/dev/null 2>&1; then
+    TARGET_LAYOUT=""
+    case "$1" in
+      bsp) TARGET_LAYOUT="tiles" ;;
+      stack) TARGET_LAYOUT="accordion" ;;
+      float) TARGET_LAYOUT="floating" ;;
+    esac
+    
+    if [ -n "$TARGET_LAYOUT" ]; then
+      aerospace layout "$TARGET_LAYOUT"
+    fi
+  fi
 
   # 从组件名中提取主组件名 (例如从 layout.1.bsp 中把末尾的 .bsp 砍掉得到 layout.1)
   PARENT_NAME="${NAME%.*}"
@@ -26,8 +37,19 @@ fi
 DISPLAY_ID="${NAME##*.}"
 
 LAYOUT="unknown"
-if command -v yabai >/dev/null 2>&1; then
-  LAYOUT="$(yabai -m query --spaces --display $DISPLAY_ID | jq -r '.[] | select(."is-visible" == true) | .type')"
+if command -v aerospace >/dev/null 2>&1; then
+  AERO_LAYOUT="$(aerospace list-workspaces --monitor "$DISPLAY_ID" --visible --format "%{workspace-root-container-layout}" 2>/dev/null)"
+  case "$AERO_LAYOUT" in
+    *tiles*|*tiling*)
+      LAYOUT="bsp"
+      ;;
+    *accordion*)
+      LAYOUT="stack"
+      ;;
+    *floating*)
+      LAYOUT="float"
+      ;;
+  esac
 fi
 
 case "$LAYOUT" in

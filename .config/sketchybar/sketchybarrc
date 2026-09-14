@@ -7,10 +7,10 @@
 CONFIG_DIR="${CONFIG_DIR:-$HOME/.config/sketchybar}"
 PLUGIN_DIR="$CONFIG_DIR/plugins"
 
-SPACES=({1..10})
+SPACES=({1..9})
 
 export FONT="SF Pro"
-export ICON_FONT="Hack Nerd Font Mono"
+export ICON_FONT="JetBrainsMono Nerd Font"
 
 # TokyoNight Day palette (SketchyBar uses 0xAARRGGBB).
 export WHITE=0xff3760bf
@@ -49,7 +49,7 @@ default=(
   updates=when_shown
   padding_left=4
   padding_right=4
-  icon.font="$ICON_FONT:Bold:18.0"
+  icon.font="$ICON_FONT:Bold:16.0"
   icon.color=$TEXT
   icon.padding_left=8
   icon.padding_right=6
@@ -121,11 +121,17 @@ sketchybar --add item layout_gap left \
     label.drawing=off \
     background.drawing=off
 
+sketchybar --add event aerospace_workspace_change
+
 for i in "${!SPACES[@]}"; do
   sid=$((i + 1))
-  sketchybar --add space space.$sid left \
+  sketchybar --add item space.$sid left \
+    --subscribe space.$sid aerospace_workspace_change \
     --set space.$sid \
-      space=$sid \
+      background.color=$BLUE \
+      background.drawing=off \
+      background.corner_radius=8 \
+      background.height=24 \
       icon="${sid}" \
       icon.font="$FONT:Bold:13.0" \
       icon.color=$MUTED \
@@ -133,12 +139,9 @@ for i in "${!SPACES[@]}"; do
       icon.padding_left=10 \
       icon.padding_right=10 \
       label.drawing=off \
-      background.color=$BLUE \
-      background.drawing=off \
-      background.corner_radius=8 \
-      background.height=24 \
-      script="$PLUGIN_DIR/space.sh" \
-      click_script="yabai -m space --focus $sid 2>/dev/null || true"
+      update_freq=5 \
+      click_script="aerospace workspace $sid 2>/dev/null || true" \
+      script="$PLUGIN_DIR/space.sh $sid"
 done
 
 sketchybar --add bracket spaces '/space\.*/' \
@@ -166,6 +169,16 @@ sketchybar --add item front_app left \
     script="$PLUGIN_DIR/front_app.sh" \
   --subscribe front_app front_app_switched
 
+sketchybar --add item theme left \
+  --set theme \
+    icon=󰖨 \
+    icon.font="$ICON_FONT:Bold:16.0" \
+    label.drawing=off \
+    update_freq=5 \
+    background.color=$ITEM_BG \
+    background.drawing=on \
+    script="$PLUGIN_DIR/theme.sh" \
+    click_script="$PLUGIN_DIR/theme.sh toggle"
 ##### Right: clock, system status #####
 # Right-side items are laid out in the order they are added, starting from
 # the screen edge. Add the clock first so it stays at the far right.
@@ -233,7 +246,7 @@ sketchybar --add item cpu right \
   --set cpu \
     width=58 \
     padding_right=12 \
-    icon= \
+    icon= \
     icon.color=$GREEN \
     update_freq=5 \
     script="$PLUGIN_DIR/cpu.sh"
@@ -242,7 +255,7 @@ sketchybar --add item memory right \
   --set memory \
     width=58 \
     padding_right=12 \
-    icon=󰍛 \
+    icon= \
     icon.color=$GREEN \
     update_freq=5 \
     script="$PLUGIN_DIR/memory.sh"
