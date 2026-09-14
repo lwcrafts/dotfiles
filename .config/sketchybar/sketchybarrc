@@ -12,24 +12,45 @@ SPACES=({1..9})
 export FONT="SF Pro"
 export ICON_FONT="JetBrainsMono Nerd Font"
 
-# TokyoNight Day palette (SketchyBar uses 0xAARRGGBB).
-export WHITE=0xff3760bf
-export TEXT=0xff3760bf
-export MUTED=0xff6172b0
-export SUBTLE=0xff8990b3
-export BLUE=0xff2e7de9
-export GREEN=0xff587539
-export YELLOW=0xff8c6c3e
-export RED=0xfff52a65
-export LAVENDER=0xff7847bd
-export BAR_BG=0xeee1e2e7
-export ITEM_BG=0x88d5d6db
-export ITEM_BG_HOVER=0xaac4c8da
-export BORDER=0x663760bf
-export TRANSPARENT=0x00000000
+# TokyoNight palettes
+if [ "$(osascript -e 'tell app "System Events" to tell appearance preferences to return dark mode')" = "true" ]; then
+  # Dark palette (TokyoNight Night)
+  export WHITE=0xffc0caf5
+  export TEXT=0xffc0caf5
+  export MUTED=0xff565f89
+  export SUBTLE=0xff9aa5ce
+  export BLUE=0xff7aa2f7
+  export GREEN=0xff9ece6a
+  export YELLOW=0xffe0af68
+  export RED=0xfff7768e
+  export LAVENDER=0xffbb9af7
+  export BAR_BG=0xee1a1b26
+  export ITEM_BG=0x8824283b
+  export ITEM_BG_HOVER=0xaa292e42
+  export BORDER=0x66414868
+  export TRANSPARENT=0x00000000
+else
+  # Light palette (TokyoNight Day)
+  export WHITE=0xff3760bf
+  export TEXT=0xff3760bf
+  export MUTED=0xff6172b0
+  export SUBTLE=0xff8990b3
+  export BLUE=0xff2e7de9
+  export GREEN=0xff587539
+  export YELLOW=0xff8c6c3e
+  export RED=0xfff52a65
+  export LAVENDER=0xff7847bd
+  export BAR_BG=0xeee1e2e7
+  export ITEM_BG=0x88d5d6db
+  export ITEM_BG_HOVER=0xaac4c8da
+  export BORDER=0x663760bf
+  export TRANSPARENT=0x00000000
+fi
 
 # Keep reloading idempotent.
 sketchybar --remove '/.*/' >/dev/null 2>&1
+
+sketchybar --add event theme_change "AppleInterfaceThemeChangedNotification"
 
 ##### Bar #####
 sketchybar --bar \
@@ -178,7 +199,8 @@ sketchybar --add item theme left \
     background.color=$ITEM_BG \
     background.drawing=on \
     script="$PLUGIN_DIR/theme.sh" \
-    click_script="$PLUGIN_DIR/theme.sh toggle"
+    click_script="$PLUGIN_DIR/theme.sh toggle" \
+  --subscribe theme theme_change
 ##### Right: clock, system status #####
 # Right-side items are laid out in the order they are added, starting from
 # the screen edge. Add the clock first so it stays at the far right.
