@@ -59,6 +59,9 @@ persistent-workspaces = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B",
 # See: https://nikitabobko.github.io/AeroSpace/commands#mode
 on-mode-changed = []
 
+# 当 Aerospace 切换工作区时主动通知 SketchyBar 更新
+exec-on-workspace-change = ['/bin/bash', '-c', 'sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE']
+
 focus-follows-mouse.enabled = false
 
 # Possible values: (qwerty|dvorak|colemak)
@@ -77,7 +80,7 @@ gaps.inner.horizontal = 8
 gaps.inner.vertical =   8
 gaps.outer.left =       8
 gaps.outer.bottom =     8
-gaps.outer.top =        8
+gaps.outer.top =        [{ monitor.'built-in' = 18 }, 48]
 gaps.outer.right =      8
 
 # 'main' binding mode declaration
@@ -93,6 +96,9 @@ on-window-detected = [
     { if = 'test %{app-bundle-id} = ru.keepcoder.Telegram', run = 'layout floating' },
     { if = 'test %{app-bundle-id} = com.tencent.xinWeChat', run = 'layout floating' },
     { if = 'test %{app-bundle-id} = com.apple.Music', run = 'layout floating' },
+    { if = 'test %{app-bundle-id} = com.ccswitch.desktop', run = 'layout floating' },
+    { if = 'test %{app-bundle-id} = com.ccswitch.desktop', run = 'layout floating' },
+    { if = 'test %{app-bundle-id} = com.runningwithcrayons.Alfred-Preferences', run = 'layout floating' },
         
     # zashboard (Brave PWA) 默认悬浮
     # 用 app-bundle-id 而非 window-title：Chromium 系 PWA 在 on-window-detected
