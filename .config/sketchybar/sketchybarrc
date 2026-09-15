@@ -111,7 +111,7 @@ for ((d=1; d<=DISPLAYS_COUNT; d++)); do
       update_freq=5 \
       script="$PLUGIN_DIR/layout.sh" \
       click_script="$PLUGIN_DIR/layout.sh toggle" \
-    --subscribe layout.$d space_change display_change system_woke
+    --subscribe layout.$d space_change display_change system_woke aerospace_window_change
 
   for i in "${!LAYOUTS[@]}"; do
     name="${LAYOUTS[i]}"
@@ -143,11 +143,14 @@ sketchybar --add item layout_gap left \
     background.drawing=off
 
 sketchybar --add event aerospace_workspace_change
+# Fired by AeroSpace's on-window-detected / on-focus-changed callbacks so the
+# space chips react to windows appearing or closing without a workspace switch.
+sketchybar --add event aerospace_window_change
 
 for i in "${!SPACES[@]}"; do
   sid=$((i + 1))
   sketchybar --add item space.$sid left \
-    --subscribe space.$sid aerospace_workspace_change \
+    --subscribe space.$sid aerospace_workspace_change aerospace_window_change \
     --set space.$sid \
       background.color=$BLUE \
       background.drawing=off \
@@ -161,6 +164,7 @@ for i in "${!SPACES[@]}"; do
       icon.padding_right=10 \
       label.drawing=off \
       update_freq=5 \
+      updates=true \
       click_script="aerospace workspace $sid 2>/dev/null || true" \
       script="$PLUGIN_DIR/space.sh $sid"
 done
