@@ -7,7 +7,7 @@
 CONFIG_DIR="${CONFIG_DIR:-$HOME/.config/sketchybar}"
 PLUGIN_DIR="$CONFIG_DIR/plugins"
 
-SPACES=({1..9})
+SPACES=({1..6})
 
 export FONT="SF Pro"
 export ICON_FONT="JetBrainsMono Nerd Font"
@@ -24,7 +24,10 @@ if [ "$(osascript -e 'tell app "System Events" to tell appearance preferences to
   export YELLOW=0xffe0af68
   export RED=0xfff7768e
   export LAVENDER=0xffbb9af7
-  export BAR_BG=0xee1a1b26
+  # Low alpha lets blur_radius show through as frosted glass.
+  export BAR_BG=0x801a1b26
+  # Popups float over arbitrary windows, keep them near-opaque for readability.
+  export POPUP_BG=0xee1a1b26
   export ITEM_BG=0x8824283b
   export ITEM_BG_HOVER=0xaa292e42
   export BORDER=0x66414868
@@ -40,7 +43,10 @@ else
   export YELLOW=0xff8c6c3e
   export RED=0xfff52a65
   export LAVENDER=0xff7847bd
-  export BAR_BG=0xeee1e2e7
+  # Low alpha lets blur_radius show through as frosted glass.
+  export BAR_BG=0x99e1e2e7
+  # Popups float over arbitrary windows, keep them near-opaque for readability.
+  export POPUP_BG=0xeee1e2e7
   export ITEM_BG=0x88d5d6db
   export ITEM_BG_HOVER=0xaac4c8da
   export BORDER=0x663760bf
@@ -59,7 +65,7 @@ sketchybar --bar \
   margin=8 \
   y_offset=4 \
   corner_radius=12 \
-  blur_radius=30 \
+  blur_radius=20 \
   color=$BAR_BG \
   shadow=off \
   padding_left=8 \
@@ -81,7 +87,7 @@ default=(
   background.color=$TRANSPARENT
   background.corner_radius=9
   background.height=26
-  popup.background.color=$BAR_BG
+  popup.background.color=$POPUP_BG
   popup.background.corner_radius=10
   popup.background.border_width=1
   popup.background.border_color=$BORDER
@@ -99,40 +105,6 @@ sketchybar --add item apple left \
     background.drawing=on \
     click_script="open -a 'System Settings'"
 
-
-DISPLAYS_COUNT=$(sketchybar --query displays | jq '. | length')
-LAYOUTS=("bsp" "stack" "float")
-LAYOUT_ICONS=("󰘯" "󰙀" "󰉈")
-for ((d=1; d<=DISPLAYS_COUNT; d++)); do
-  sketchybar --add item layout.$d left \
-    --set layout.$d \
-      display=$d \
-      label.drawing=off \
-      update_freq=5 \
-      script="$PLUGIN_DIR/layout.sh" \
-      click_script="$PLUGIN_DIR/layout.sh toggle" \
-    --subscribe layout.$d space_change display_change system_woke aerospace_window_change
-
-  for i in "${!LAYOUTS[@]}"; do
-    name="${LAYOUTS[i]}"
-    icon="${LAYOUT_ICONS[i]}"
-
-    sketchybar --add item layout.$d.$name popup.layout.$d \
-      --set layout.$d.$name \
-        icon="$icon" \
-        label="$name" \
-        click_script="$PLUGIN_DIR/layout.sh $name"
-  done
-done
-
-sketchybar --add bracket layout_bracket layout.{1..10} \
-  --set layout_bracket \
-    background.color=$ITEM_BG \
-    background.corner_radius=10 \
-    background.height=28 \
-    background.border_width=1 \
-    background.border_color=$BORDER
-#
 # # Bracket backgrounds extend 4 pt beyond their items. Reserve a real gap so
 # # the layout and spaces brackets do not paint over one another.
 sketchybar --add item layout_gap left \
@@ -147,11 +119,19 @@ sketchybar --add event aerospace_workspace_change
 # space chips react to windows appearing or closing without a workspace switch.
 sketchybar --add event aerospace_window_change
 
+# Centralized event listener for aerospace
+sketchybar --add item aerospace_listener left \
+  --subscribe aerospace_listener aerospace_workspace_change aerospace_window_change \
+  --set aerospace_listener \
+    drawing=off \
+    updates=on \
+    script="$PLUGIN_DIR/aerospace.sh"
+
 for i in "${!SPACES[@]}"; do
   sid=$((i + 1))
   sketchybar --add item space.$sid left \
-    --subscribe space.$sid aerospace_workspace_change aerospace_window_change \
     --set space.$sid \
+      updates=on \
       background.color=$BLUE \
       background.drawing=off \
       background.corner_radius=8 \
@@ -163,10 +143,7 @@ for i in "${!SPACES[@]}"; do
       icon.padding_left=10 \
       icon.padding_right=10 \
       label.drawing=off \
-      update_freq=5 \
-      updates=true \
-      click_script="aerospace workspace $sid 2>/dev/null || true" \
-      script="$PLUGIN_DIR/space.sh $sid"
+      click_script="aerospace workspace $sid 2>/dev/null || true"
 done
 
 sketchybar --add bracket spaces '/space\.*/' \
