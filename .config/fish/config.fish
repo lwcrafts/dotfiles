@@ -17,8 +17,8 @@ set -gx EDITOR nvim
 set -gx XDG_RUNTIME_DIR ~/.runtime
 set -gx XDG_CONFIG_HOME $HOME/.config
 
-alias config '/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
-alias config-lg 'GIT_DIR=$HOME/.cfg/ GIT_WORK_TREE=$HOME lazygit'
+alias config '/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
+alias config-lg 'GIT_DIR=$HOME/.dotfiles/ GIT_WORK_TREE=$HOME lazygit'
 
 alias reload 'source $XDG_CONFIG_HOME/fish/config.fish'
 alias ls 'eza --color=always --icons --group-directories-first'
