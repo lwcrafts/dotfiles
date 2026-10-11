@@ -83,7 +83,8 @@ gaps.inner.horizontal = 8
 gaps.inner.vertical =   8
 gaps.outer.left =       8
 gaps.outer.bottom =     8
-gaps.outer.top =        [{ monitor.'built-in' = 18 }, 48]
+gaps.outer.top =        [{ monitor.'built-in' = 8 }, 8]
+#gaps.outer.top =        [{ monitor.'built-in' = 18 }, 48]
 gaps.outer.right =      8
 
 # 'main' binding mode declaration
