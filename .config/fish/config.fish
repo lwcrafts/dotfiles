@@ -82,9 +82,9 @@ end
 #   oh-my-posh init fish --config $XDG_CONFIG_HOME/ohmyposh/config.omp.json | source
 # end
 
-if type -q starship
-  starship init fish | source
-end
+# if type -q starship
+#   starship init fish | source
+# end
 
 # local config
 set LOCAL_CONFIG (dirname (status --current-filename))/config-local.fish
